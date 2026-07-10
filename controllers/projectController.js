@@ -5,9 +5,7 @@ const {
   createActivity,
 } = require("./activityController");
 
-
 // Create Project
-
 const createProject = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -18,7 +16,6 @@ const createProject = async (req, res) => {
       createdBy: req.user.id,
     });
 
-    // Activity Log
     await createActivity(
       `Created project "${project.title}"`,
       project._id,
@@ -35,9 +32,7 @@ const createProject = async (req, res) => {
   }
 };
 
-
 // Get All Projects
-
 const getProjects = async (req, res) => {
   try {
     const projects = await Project.find({
@@ -54,9 +49,7 @@ const getProjects = async (req, res) => {
   }
 };
 
-
 // Get Project By ID
-
 const getProjectById = async (req, res) => {
   try {
     const project = await Project.findOne({
@@ -81,7 +74,6 @@ const getProjectById = async (req, res) => {
 };
 
 // Update Project
-
 const updateProject = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -106,7 +98,6 @@ const updateProject = async (req, res) => {
       });
     }
 
-    // Activity Log
     await createActivity(
       `Updated project "${project.title}"`,
       project._id,
@@ -123,7 +114,6 @@ const updateProject = async (req, res) => {
   }
 };
 
-
 // Delete Project
 const deleteProject = async (req, res) => {
   try {
@@ -138,7 +128,6 @@ const deleteProject = async (req, res) => {
       });
     }
 
-    // Activity Log
     await createActivity(
       `Deleted project "${project.title}"`,
       project._id,
@@ -157,8 +146,7 @@ const deleteProject = async (req, res) => {
   }
 };
 
-// Add Member to Project
-
+// Add Member
 const addMember = async (req, res) => {
   try {
     const { email } = req.body;
@@ -186,23 +174,22 @@ const addMember = async (req, res) => {
     }
 
     const alreadyMember = project.members.some(
-  (member) => member.user.toString() === user._id.toString()
-);
+      (member) => member.user.toString() === user._id.toString()
+    );
 
-if (alreadyMember) {
-  return res.status(400).json({
-    message: "User is already a member",
-  });
-}
+    if (alreadyMember) {
+      return res.status(400).json({
+        message: "User is already a member",
+      });
+    }
 
-project.members.push({
-  user: user._id,
-  role: "Member",
-});
+    project.members.push({
+      user: user._id,
+      role: "Member",
+    });
 
-await project.save();
+    await project.save();
 
-    // Activity Log
     await createActivity(
       `Added ${user.name} to the project`,
       project._id,
@@ -219,14 +206,12 @@ await project.save();
   }
 };
 
-
 // Get Project Members
-
 const getProjectMembers = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
       .populate("createdBy", "name email")
-      .populate("members", "name email");
+      .populate("members.user", "name email");
 
     if (!project) {
       return res.status(404).json({
@@ -243,7 +228,6 @@ const getProjectMembers = async (req, res) => {
     });
   }
 };
-
 
 // Remove Member
 const removeMember = async (req, res) => {
@@ -262,23 +246,13 @@ const removeMember = async (req, res) => {
       });
     }
 
-    const removedMember = project.members.find(
-      (memberId) => memberId.toString() === req.params.memberId
-    );
-
-    if (!removedMember) {
-      return res.status(404).json({
-        message: "Member not found in project",
-      });
-    }
-
     project.members = project.members.filter(
-      (memberId) => memberId.toString() !== req.params.memberId
+      (member) =>
+        member.user.toString() !== req.params.memberId
     );
 
     await project.save();
 
-    // Activity Log
     await createActivity(
       "Removed a member from the project",
       project._id,

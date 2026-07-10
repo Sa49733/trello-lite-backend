@@ -40,11 +40,36 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
 
-    // NEW FIELD
+    // Assigned Member
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+
+    // File Attachments
+    attachments: [
+      {
+        filename: {
+          type: String,
+        },
+
+        originalname: {
+          type: String,
+        },
+
+        path: {
+          type: String,
+        },
+
+        mimetype: {
+          type: String,
+        },
+
+        size: {
+          type: Number,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -18,10 +18,30 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Avatar Image
+    avatar: {
+      type: String,
+      default: "",
+    },
+
     role: {
       type: String,
       enum: ["admin", "user"],
       default: "user",
+    },
+
+    // ==============================
+    // Password Reset
+    // ==============================
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpire: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -29,4 +49,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);

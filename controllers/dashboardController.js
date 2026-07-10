@@ -3,28 +3,58 @@ const Task = require("../models/Task");
 
 const getDashboard = async (req, res) => {
   try {
-    const totalProjects = await Project.countDocuments({
-      createdBy: req.user.id,
-    });
 
-    const totalTasks = await Task.countDocuments({
-      createdBy: req.user.id,
-    });
+    // ==========================
+    // Projects
+    // ==========================
 
-    const todoTasks = await Task.countDocuments({
-      createdBy: req.user.id,
-      status: "Todo",
-    });
+    const totalProjects =
+      await Project.countDocuments({
+        $or: [
+          {
+            createdBy: req.user.id,
+          },
+          {
+            "members.user": req.user.id,
+          },
+        ],
+      });
 
-    const inProgressTasks = await Task.countDocuments({
-      createdBy: req.user.id,
-      status: "In Progress",
-    });
+    // ==========================
+    // Tasks
+    // ==========================
 
-    const doneTasks = await Task.countDocuments({
-      createdBy: req.user.id,
-      status: "Done",
-    });
+    const filter = {
+      $or: [
+        {
+          createdBy: req.user.id,
+        },
+        {
+          assignedTo: req.user.id,
+        },
+      ],
+    };
+
+    const totalTasks =
+      await Task.countDocuments(filter);
+
+    const todoTasks =
+      await Task.countDocuments({
+        ...filter,
+        status: "Todo",
+      });
+
+    const inProgressTasks =
+      await Task.countDocuments({
+        ...filter,
+        status: "In Progress",
+      });
+
+    const doneTasks =
+      await Task.countDocuments({
+        ...filter,
+        status: "Done",
+      });
 
     res.status(200).json({
       totalProjects,
@@ -33,10 +63,15 @@ const getDashboard = async (req, res) => {
       inProgressTasks,
       doneTasks,
     });
+
   } catch (error) {
+
+    console.log(error);
+
     res.status(500).json({
       message: error.message,
     });
+
   }
 };
 
